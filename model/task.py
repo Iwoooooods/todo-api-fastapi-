@@ -5,9 +5,9 @@ from sqlalchemy.sql import func
 Base = declarative_base()
 
 class Task(Base):
-    __tablename__ = 'task'
+    __tablename__ = 'tasks'
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True, nullable=False)
+    id = Column(BigInteger, primary_key=True, autoincrement=True, nullable=False, index=True)
     created_at = Column(DateTime, default=func.current_timestamp(), nullable=True)
     updated_at = Column(DateTime, default=None, onupdate=func.current_timestamp(), nullable=True)
     title = Column(String(255), nullable=False)
@@ -15,7 +15,7 @@ class Task(Base):
     content = Column(Text, nullable=True)
     is_completed = Column(Boolean, default=False, nullable=True)
     deadline = Column(DateTime, nullable=True)
-    user_id = Column(BigInteger, nullable=False)
+    user_id = Column(BigInteger, nullable=False, index=True)
 
     def __repr__(self):
         return f"<Task(id={self.id}, title={self.title}, user_id={self.user_id})>"
