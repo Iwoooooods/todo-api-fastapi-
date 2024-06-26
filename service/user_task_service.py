@@ -23,8 +23,8 @@ class TaskService:
             tasks = await self.repo.get_task_by_user(user_id)
             tasks = [task.to_dict() for task in tasks]
             return PageResponse(code=200, message="Success", data={"tasks": tasks})
-        except Exception:
-            return PageResponse(code=500, message="Fail to Get(qwq)", data={})
+        except Exception as e:
+            return PageResponse(code=500, message="Fail to Get(qwq)", data={"detail": str(e)})
 
     async def create_task(self, req: CreateTaskRequest) -> PageResponse:
         """
@@ -37,9 +37,8 @@ class TaskService:
             await self.repo.add_task(task)
             logger.success(task)
             return PageResponse(code=200, message="Success", data={})
-        except Exception:
-            logger.error(Exception.__dict__)
-            return PageResponse(code=500, message="Fail to Create(qwq)", data={})
+        except Exception as e:
+            return PageResponse(code=500, message="Fail to Create(qwq)", data={"detail": str(e)})
 
 
 
@@ -47,9 +46,17 @@ class TaskService:
         try:
             await self.repo.update_task(task_id, req.dict())
             return BaseResponse(code=200, message="Task Completed! Congratulation!!", data={})
-        except Exception:
-            logger.error(Exception.__dict__)
-            return BaseResponse(code=500, message="Fail to Update(qwq)", data={})
+        except Exception as e:
+            return BaseResponse(code=500, message="Fail to Update(qwq)", data={"detail": str(e)})
+
+    async def delete_task(self, task_id: int) -> BaseResponse:
+        # await self.repo.delete_task(task_id)
+        # return BaseResponse(code=200, message="Task Deleted! Keep Going!", data={})
+        try:
+            await self.repo.delete_task(task_id)
+            return BaseResponse(code=200, message="Task Deleted! Keep Going!")
+        except Exception as e:
+            return BaseResponse(code=500, message="Fail to Delete(qwq)", data={"detail": str(e)})
 
 
 

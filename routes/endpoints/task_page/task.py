@@ -17,3 +17,7 @@ async def create_task(req: CreateTaskRequest, task_service: TaskService = Depend
 @router.put("/task_done/{task_id}")
 async def complete_task(task_id: int, req: CompleteTaskRequest, task_service: TaskService = Depends(get_task_service)) -> BaseResponse:
     return await task_service.complete_task(task_id, req)
+
+@router.delete("/delete_task/{task_id}")
+async def delete_task(task_id: int, task_service: TaskService = Depends(get_task_service)):
+    return await task_service.delete_task(task_id)
