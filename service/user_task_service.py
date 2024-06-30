@@ -1,7 +1,7 @@
 from fastapi import Depends
 from loguru import logger
 
-from schema.user_task import PageResponse, CreateTaskRequest, CompleteTaskRequest, BaseResponse
+from schema.user_task import PageResponse, CreateTaskRequest, CompleteTaskRequest, BaseResponse, BaseQueryRequest
 from model.task import Task
 from repository.user_task_repository import TaskRepository, get_repository
 
@@ -42,10 +42,13 @@ class TaskService:
 
 
 
-    async def complete_task(self, task_id: int, req: CompleteTaskRequest) -> BaseResponse:
+    async def update_task(self, task_id: int, req: CompleteTaskRequest|BaseQueryRequest) -> BaseResponse:
         try:
             await self.repo.update_task(task_id, req.dict())
-            return BaseResponse(code=200, message="Task Completed! Congratulation!!", data={})
+            if isinstance(req, CompleteTaskRequest):
+                return BaseResponse(code=200, message="Task Completed! Congratulation!!", data={})
+            else:
+                return BaseResponse(code=200, message="Task Update!", data={})
         except Exception as e:
             return BaseResponse(code=500, message="Fail to Update(qwq)", data={"detail": str(e)})
 
@@ -54,7 +57,7 @@ class TaskService:
         # return BaseResponse(code=200, message="Task Deleted! Keep Going!", data={})
         try:
             await self.repo.delete_task(task_id)
-            return BaseResponse(code=200, message="Task Deleted! Keep Going!")
+            return BaseResponse(code=200, message="Task Deleted! Keep Going!", data={})
         except Exception as e:
             return BaseResponse(code=500, message="Fail to Delete(qwq)", data={"detail": str(e)})
 

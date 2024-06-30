@@ -18,7 +18,6 @@ class CreateTaskRequest(BaseQueryRequest):
     user_id: int
     title: str
     content: str
-    deadline: date
 
 class CompleteTaskRequest(BaseQueryRequest):
     is_completed: bool = True

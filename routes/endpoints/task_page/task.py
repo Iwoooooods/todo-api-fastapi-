@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from schema.user_task import CreateTaskRequest, PageResponse, CompleteTaskRequest, BaseResponse
+from schema.user_task import CreateTaskRequest, PageResponse, CompleteTaskRequest, BaseResponse, BaseQueryRequest
 from service.user_task_service import get_task_service, TaskService
 
 
@@ -16,7 +16,11 @@ async def create_task(req: CreateTaskRequest, task_service: TaskService = Depend
 
 @router.put("/task_done/{task_id}")
 async def complete_task(task_id: int, req: CompleteTaskRequest, task_service: TaskService = Depends(get_task_service)) -> BaseResponse:
-    return await task_service.complete_task(task_id, req)
+    return await task_service.update_task(task_id, req)
+
+@router.put("/task_update/{task_id}")
+async def update_task(task_id: int, req: BaseQueryRequest, task_service: TaskService = Depends(get_task_service)) -> BaseResponse:
+    return await task_service.update_task(task_id, req)
 
 @router.delete("/delete_task/{task_id}")
 async def delete_task(task_id: int, task_service: TaskService = Depends(get_task_service)):
