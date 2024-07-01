@@ -1,8 +1,9 @@
+from datetime import datetime
 from typing import Dict, List, Any
 
 from fastapi import Depends, HTTPException
 from loguru import logger
-from sqlalchemy import text, select
+from sqlalchemy import text, select, and_, or_, func, desc
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,6 +34,61 @@ class TaskRepository:
         except SQLAlchemyError as e:
             raise HTTPException(status_code=404, detail=str(e))
 
+    async def query_tasks(self, user_id: int, order_by: str = None, asc: bool = False,
+                          due_before: datetime = None, lte: bool = False, **filters) -> Any:
+
+        query = select(Task).filter(Task.user_id == user_id)
+
+        for key, value in filters.items():
+            query = query.filter(getattr(Task, key) == value)
+
+        if due_before:
+            if lte:
+                query.filter(getattr(Task, "deadline") <= due_before)
+            else:
+                query.filter(getattr(Task, "deadline") > due_before)
+
+        if order_by:
+            if asc:
+                query = query.order_by(text(f"{order_by} asc"))
+            else:
+                query = query.order_by(text(f"{order_by} desc"))
+
+        try:
+            result = await self.db.execute(query)
+            tasks = result.scalars().all()
+            return tasks
+        except SQLAlchemyError as e:
+            raise e
+
+    async def get_in_process_task(self, user_id: int, in_process: bool = True) -> Any:
+        query = select(Task)
+        if in_process:
+            query = query.where(
+                and_(Task.is_completed == False,
+                     # Task.user_id == user_id,
+                     or_(
+                         Task.deadline == None,
+                         Task.deadline >= func.current_date()
+                     )
+                     )
+            ).order_by(desc(Task.created_at))
+        else:
+            query = query.where(
+                and_(Task.user_id == user_id),
+                or_(Task.is_completed == True,
+                    Task.deadline < func.current_date())
+            ).order_by(desc(Task.updated_at))
+
+        try:
+            logger.info(f"{__name__}:{query}")
+            print(datetime.today())
+            result = await self.db.execute(query)
+            tasks = result.scalars().all()
+            return tasks
+        except SQLAlchemyError as error:
+            raise error
+
     async def get_task_by_id(self, id: int) -> Any:
         try:
             result = await self.db.execute(select(Task).filter(Task.id == id))
@@ -41,7 +97,7 @@ class TaskRepository:
                 raise HTTPException(status_code=404, detail="Task not found")
             return task
         except SQLAlchemyError as e:
-            raise HTTPException(status_code=404, detail=str(e))
+            raise e
 
     async def add_task(self, task: Task) -> None:
         try:
@@ -49,7 +105,7 @@ class TaskRepository:
             await self.db.commit()
         except SQLAlchemyError as e:
             await self.db.rollback()
-            raise HTTPException(status_code=500, detail=str(e))
+            raise e
 
     async def update_task(self, task_id: int, update_fields: Dict[str, any]) -> None:
         result = await self.db.execute(select(Task).filter(Task.id == task_id))
@@ -65,7 +121,7 @@ class TaskRepository:
         except SQLAlchemyError as e:
             await self.db.rollback()
             logger.error(str(e))
-            raise HTTPException(status_code=500, detail=str(e))
+            raise e
 
     async def delete_task(self, task_id: int) -> None:
         try:
@@ -77,7 +133,7 @@ class TaskRepository:
             await self.db.commit()
         except SQLAlchemyError as e:
             await self.db.rollback()
-            raise HTTPException(status_code=500, detail=str(e))
+            raise e
 
 
 async def get_repository(db: AsyncSession = Depends(get_db)):

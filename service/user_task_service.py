@@ -1,5 +1,6 @@
 from fastapi import Depends
 from loguru import logger
+from datetime import datetime
 
 from schema.user_task import PageResponse, CreateTaskRequest, CompleteTaskRequest, BaseResponse, BaseQueryRequest
 from model.task import Task
@@ -25,6 +26,14 @@ class TaskService:
             return PageResponse(code=200, message="Success", data={"tasks": tasks})
         except Exception as e:
             return PageResponse(code=500, message="Fail to Get(qwq)", data={"detail": str(e)})
+
+    async def completed_or_in_process(self, user_id: int, in_processed: bool) -> BaseResponse:
+        try:
+            tasks = await self.repo.get_in_process_task(user_id, in_processed)
+            tasks = [task.to_dict() for task in tasks]
+            return BaseResponse(code=200, message="Success", data={"tasks": tasks})
+        except Exception as e:
+            return BaseResponse(code=500, message="Fail to Get(qwq)", data={"detail": str(e)})
 
     async def create_task(self, req: CreateTaskRequest) -> PageResponse:
         """

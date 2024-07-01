@@ -6,9 +6,13 @@ from service.user_task_service import get_task_service, TaskService
 
 router = APIRouter()
 
-@router.get("/home")
-async def index(user_id: int, task_service: TaskService = Depends(get_task_service)) -> PageResponse :
-    return await task_service.get_tasks(user_id)
+@router.get("/in_process/{user_id}")
+async def in_process_tasks(user_id: int, task_service: TaskService = Depends(get_task_service)) -> BaseResponse :
+    return await task_service.completed_or_in_process(user_id, True)
+
+@router.get("/completed_or_overdue/{user_id}")
+async def completed_or_overdue_tasks(user_id: int, task_service: TaskService = Depends(get_task_service)) -> BaseResponse:
+    return await task_service.completed_or_in_process(user_id, False)
 
 @router.post("/create_task")
 async def create_task(req: CreateTaskRequest, task_service: TaskService = Depends(get_task_service)) -> PageResponse:
