@@ -1,12 +1,13 @@
 import os
+import dotenv
 from typing import Generator
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
 
-
-url = os.getenv("DATABASE_URL", "mysql+aiomysql://root:140323@localhost:3306/test_db")
+dotenv.load_dotenv('.env')
+url = os.getenv("DEV_DATABASE_URL")
 
 engine = create_async_engine(url)
 AsyncSessionLocal = sessionmaker(
