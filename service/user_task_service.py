@@ -1,3 +1,5 @@
+from typing import Union
+
 from fastapi import Depends
 from loguru import logger
 from datetime import datetime
@@ -51,7 +53,7 @@ class TaskService:
 
 
 
-    async def update_task(self, task_id: int, req: CompleteTaskRequest|BaseQueryRequest) -> BaseResponse:
+    async def update_task(self, task_id: int, req: Union[CompleteTaskRequest,BaseQueryRequest]) -> BaseResponse:
         try:
             await self.repo.update_task(task_id, req.dict())
             if isinstance(req, CompleteTaskRequest):
