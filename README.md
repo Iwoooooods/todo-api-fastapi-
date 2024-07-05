@@ -5,7 +5,7 @@ To activate venv:
 
 To start: 
 
-    uvicorn main:app --port 10086 --host 0.0.0.0 [--reload]
+    [nohup] python3 main.py
     
 
 
