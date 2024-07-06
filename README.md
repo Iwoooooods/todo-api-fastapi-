@@ -1,6 +1,6 @@
 To activate venv: 
 
-    source /home/ubuntu/.virtualenvs/todo-api-fastapi-/bin/activate
+    source /root/.virtualenvs/-todo-fastapi-/bin/activate
 
 
 To start: 
