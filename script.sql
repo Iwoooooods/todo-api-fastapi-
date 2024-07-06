@@ -1,3 +1,4 @@
+USE todo_app;
 create table tasks
 (
     id           bigint unsigned auto_increment
