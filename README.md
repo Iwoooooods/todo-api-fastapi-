@@ -1,3 +1,8 @@
+To make a virtual environment:
+
+    python3 -m venv /root/.virtualenvs/-todo-fastapi-
+
+
 To activate venv: 
 
     source /root/.virtualenvs/-todo-fastapi-/bin/activate
