@@ -2,7 +2,7 @@ from typing import Union
 
 from fastapi import Depends
 from loguru import logger
-from datetime import datetime
+from datetime import datetime, date
 
 from schema.user_task import PageResponse, CreateTaskRequest, CompleteTaskRequest, BaseResponse, BaseQueryRequest
 from model.task import Task
@@ -43,7 +43,13 @@ class TaskService:
         :param user_id:
         :return:
         """
-        task = Task(**req.dict())
+        task: Task = Task(**req.dict())
+        # Check if the deadline is later than now 
+        if task.deadline:
+            deadline: date = datetime(task.deadline.year, task.deadline.month, task.deadline.day, 
+                                        0, 0, 0)
+            if deadline < datetime.now():
+                return PageResponse(code=400, message="Deadline should be later than now!", data={})
         try:
             await self.repo.add_task(task)
             logger.success(task)

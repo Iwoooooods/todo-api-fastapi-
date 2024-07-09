@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 from fastapi import Depends, HTTPException
 from loguru import logger
@@ -34,8 +34,8 @@ class TaskRepository:
         except SQLAlchemyError as e:
             raise HTTPException(status_code=404, detail=str(e))
 
-    async def query_tasks(self, user_id: int, order_by: str = None, asc: bool = False,
-                          due_before: datetime = None, lte: bool = False, **filters) -> Any:
+    async def query_tasks(self, user_id: int, order_by: Optional[str] = None, asc: bool = False,
+                          due_before: Optional[datetime] = None, lte: bool = False, **filters) -> Any:
 
         query = select(Task).filter(Task.user_id == user_id)
 
@@ -107,7 +107,7 @@ class TaskRepository:
             await self.db.rollback()
             raise e
 
-    async def update_task(self, task_id: int, update_fields: Dict[str, any]) -> None:
+    async def update_task(self, task_id: int, update_fields: Dict[str, Any]) -> None:
         result = await self.db.execute(select(Task).filter(Task.id == task_id))
         task = result.scalars().first()
         if not task:
