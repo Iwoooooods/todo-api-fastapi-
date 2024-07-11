@@ -1,7 +1,7 @@
 from typing import Optional
 
 from pydantic import BaseModel
-from datetime import date
+from datetime import datetime
 
 
 class BaseQueryRequest(BaseModel):
@@ -10,7 +10,7 @@ class BaseQueryRequest(BaseModel):
     title: Optional[str] = None
     brief: Optional[str] = None
     content: Optional[str] = None
-    deadline: Optional[date] = None
+    deadline: Optional[datetime] = None
     parent_id: Optional[int] = None
     is_completed: bool = False
 

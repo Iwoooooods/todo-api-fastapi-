@@ -16,7 +16,7 @@ class Base:
 class Task(Base):
     __tablename__ = 'tasks'
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True, nullable=False, index=True)
+    id: int = Column(BigInteger, primary_key=True, autoincrement=True, nullable=False, index=True)
     created_at = Column(DateTime, default=func.current_timestamp(), nullable=True)
     updated_at = Column(DateTime, default=None, onupdate=func.current_timestamp(), nullable=True)
     title = Column(String(255), nullable=False)

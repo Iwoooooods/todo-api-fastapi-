@@ -6,6 +6,7 @@ from loguru import logger
 from sqlalchemy import text, select, and_, or_, func, desc
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from database.base import get_db
 from model.task import Task
@@ -99,10 +100,12 @@ class TaskRepository:
         except SQLAlchemyError as e:
             raise e
 
-    async def add_task(self, task: Task) -> None:
+    async def add_task(self, task: Task) -> Optional[Task]:
         try:
             self.db.add(task)
             await self.db.commit()
+            await self.db.refresh(task)
+            return task
         except SQLAlchemyError as e:
             await self.db.rollback()
             raise e

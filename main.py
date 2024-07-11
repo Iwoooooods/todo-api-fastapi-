@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routes.api import router
+from database.redis_base import redis_client
 
 app = FastAPI()
 app.include_router(router, prefix="/api", tags=[""])
@@ -25,5 +26,22 @@ async def say_hello(name: str):
     return {"message": f"Hello {name}"}
 
 
+@app.on_event("startup")
+async def startup_events():
+    try:
+        redis_client.init_connection()
+    except Exception as e:
+        print(str(e))
+
+
+@app.on_event("shutdown")
+async def shutdown_events():
+    try:
+        await redis_client.close_connection()
+        print("Shutdown connection to Redis")
+    except Exception as e:
+        print(str(e))
+
+
 if __name__ == '__main__':
-    uvicorn.run('main:app', host='0.0.0.0', port=10086, reload=True)
+    uvicorn.run('main:app', host='0.0.0.0', port=10086)
