@@ -3,8 +3,8 @@ import dotenv
 import redis.asyncio as redis
 import asyncio
 
+from typing import Optional
 from redis import Redis
-from loguru import logger
 
 dotenv.load_dotenv('../.env')
 redis_host = os.getenv("HOST")
@@ -17,14 +17,14 @@ class RedisClient:
     def __init__(self, connection_url: str):
         self._url = connection_url
         print(f"successfully connected to Redis: {self._url}")
-        self.client: Redis = None
+        self.client: Optional[Redis] = None
 
     def init_connection(self):
         pool = redis.ConnectionPool.from_url(self._url)
         self.client = redis.Redis.from_pool(pool)
 
     async def close_connection(self):
-        await self.client.aclose()
+        await self.client.close()
 
 
 async def get_client():

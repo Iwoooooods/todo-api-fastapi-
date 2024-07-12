@@ -14,10 +14,12 @@ class BaseQueryRequest(BaseModel):
     parent_id: Optional[int] = None
     is_completed: bool = False
 
+
 class CreateTaskRequest(BaseQueryRequest):
     user_id: int
     title: str
     content: str
+
 
 class CompleteTaskRequest(BaseQueryRequest):
     is_completed: bool = True
