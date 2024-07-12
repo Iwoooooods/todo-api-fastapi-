@@ -17,4 +17,12 @@ create table tasks
 create index idx_user_id
     on tasks (user_id);
 
-
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(50) NOT NULL UNIQUE,
+    hashed_password VARCHAR(50) NOT NULL,
+    disabled BOOLEAN NOT NULL DEFAULT TRUE
+);

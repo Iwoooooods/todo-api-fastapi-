@@ -93,7 +93,7 @@ class TaskRepository:
     async def get_task_by_id(self, id: int) -> Any:
         try:
             result = await self.db.execute(select(Task).filter(Task.id == id))
-            task = result.scalars().first()
+            task: Task = result.scalars().first()
             if not task:
                 raise HTTPException(status_code=404, detail="Task not found")
             return task
@@ -139,7 +139,7 @@ class TaskRepository:
             raise e
 
 
-async def get_repository(db: AsyncSession = Depends(get_db)):
+async def get_repository(db: AsyncSession = Depends(get_db)) -> TaskRepository:
     """
     Get the task repository
     :param db:

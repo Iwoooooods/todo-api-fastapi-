@@ -97,7 +97,7 @@ class TaskService:
         return BaseResponse(code=200, message="Success", data={"warning_task_num": len(warning_tasks)})
 
 
-async def get_task_service(repo: TaskRepository = Depends(get_repository)):
+async def get_task_service(repo: TaskRepository = Depends(get_repository)) -> TaskService:
     """
     Get the task service
     :param repo:
