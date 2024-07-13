@@ -20,4 +20,4 @@ class User(Base):
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(50), unique=True, nullable=False)
     hashed_password = Column(String(512), nullable=False)
-    disabled = Column(Boolean, default=True)
+    disabled = Column(Boolean, default=False)

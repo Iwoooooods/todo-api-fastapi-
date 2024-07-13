@@ -1,20 +1,19 @@
 from datetime import timedelta
-from fastapi import Depends, APIRouter, HTTPException, status
+from fastapi import Depends, APIRouter, HTTPException, status, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
-from schema.user import TokenResponse, UserLoginRequest, UserCreateRequest
+from schema.user import TokenResponse, UserLoginRequest, UserCreateRequest, BaseUserQueryResponse
 from service.user_login_service import get_login_service, LoginService
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 router = APIRouter()
 
 
-@router.post("/token")
+@router.post("/token", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def login_for_access_token(
         # form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         form_data=Depends(OAuth2PasswordRequestForm),
-        login_service: LoginService = Depends(get_login_service)
-) -> TokenResponse:
+        login_service: LoginService = Depends(get_login_service)):
     req: UserLoginRequest = UserLoginRequest(username=form_data.username, password=form_data.password)
     user = await login_service.authenticate_user(req)
     if not user:
@@ -30,16 +29,15 @@ async def login_for_access_token(
     return TokenResponse(access_token=access_token, token_type="bearer")
 
 
-@router.get("/me")
+@router.get("/me", response_model=BaseUserQueryResponse, status_code=status.HTTP_200_OK)
 async def read_users_me(
         token: str,
         login_service: LoginService = Depends(get_login_service),
 ):
-    current_user = login_service.get_current_user(token=token)
-    return await current_user
+    return await login_service.get_current_user(token=token)
 
 
-@router.post("/register")
+@router.post("/register", response_model=BaseUserQueryResponse, status_code=status.HTTP_201_CREATED)
 async def user_register(req: UserCreateRequest,
                         login_service: LoginService = Depends(get_login_service)):
     return await login_service.create_user(req)

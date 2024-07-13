@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints.task_page import task
-from .endpoints.login import auth
+from .endpoints import task, auth
 
 router = APIRouter()
 

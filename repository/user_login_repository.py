@@ -24,15 +24,16 @@ class LoginRepository:
         current_user: User = result.scalars().first()
         return current_user
 
-    async def add_user(self, user: User):
+    async def add_user(self, user: User) -> Optional[User]:
         try:
             self.db.add(user)
             await self.db.commit()
+            await self.db.refresh(user)
         except Exception as ex:
             await self.db.rollback()
             logger.error(ex)
             raise ex
-        return True
+        return user
 
 
 async def get_repository(db: AsyncSession = Depends(get_db)) -> LoginRepository:
