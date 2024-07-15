@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 from datetime import datetime
 
 from schema.base import BaseResponse
@@ -15,6 +15,12 @@ class UserTask(BaseModel):
     deadline: Optional[datetime] = None
     parent_id: Optional[int] = None
     is_completed: bool = False
+
+    @field_serializer("deadline")
+    def serialize_dt(self, deadline: datetime, _info):
+        if deadline is None:
+            return None
+        return datetime.strftime(deadline, "%Y-%m-%d")
 
 
 class BaseQueryRequest(BaseModel):

@@ -33,16 +33,22 @@ class TaskService:
         except Exception as e:
             return PageResponse(code=500, message="Fail to Get(qwq)", data={"detail": str(e)})
 
-    async def completed_or_in_process(self, user_id: int, in_processed: bool) -> Response | List[UserTask]:
+    async def completed_or_in_process(self, user_id: int, in_processed: bool) -> Response:
         try:
-            tasks = await self.repo.get_in_process_task(user_id, in_processed)
-            tasks = [task.to_dict() for task in tasks]
-            return [UserTask(**task) for task in tasks]
+            tasks: List[Task] = await self.repo.get_in_process_task(user_id, in_processed)
+            dict_tasks = [task.to_dict() for task in tasks]
+            # for task in dict_tasks:
+            #     for key, value in task.items():
+            #         if isinstance(value, datetime):
+            #             task[key] = datetime.strftime(task[key], "%Y-%m-%d %H:%M:%S")
+            #             print(f"{key}:{type(task[key])}")
+            return JSONResponse(content={"tasks": [UserTask(**task).model_dump() for task in dict_tasks]},
+                                status_code=status.HTTP_200_OK)
         except Exception as e:
             logger.error(e)
             return JSONResponse({"msg": "Fail to Complete"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    async def create_task(self, req: CreateTaskRequest, redis_client: Redis) -> Response | dict:
+    async def create_task(self, req: CreateTaskRequest, redis_client: Redis) -> Response:
         """
 
         :param redis_client:
@@ -65,7 +71,7 @@ class TaskService:
             name = f"user:{task.user_id}:time_remain"
             await redis_client.zadd(name, {str(task.id): deadline_timestamp})
             # await redis_client.expire(name, deadline_timestamp - int(datetime.now().timestamp()))
-        return {"task_id": task.id}
+        return JSONResponse(content={"task_id": task.id}, status_code=status.HTTP_201_CREATED)
 
     async def update_task(self, task_id: int, user_id: int, req: CompleteTaskRequest | BaseQueryRequest,
                           redis_client: Redis) -> Response:
@@ -101,7 +107,7 @@ class TaskService:
                                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @staticmethod
-    async def overdue_warning(user_id: int, redis_client: Redis) -> Response | dict:
+    async def overdue_warning(user_id: int, redis_client: Redis) -> Response:
         now = datetime.now()
         in_24_hours = datetime.now() + timedelta(days=1)
         try:
@@ -110,7 +116,7 @@ class TaskService:
         except Exception as ex:
             logger.error(ex)
             return JSONResponse(content="Internal Server Error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return {"warning_task_num": len(warning_tasks)}
+        return JSONResponse(content={"warning_task_num": len(warning_tasks)}, status_code=status.HTTP_200_OK)
 
 
 async def get_task_service(repo: TaskRepository = Depends(get_repository)) -> TaskService:

@@ -23,7 +23,6 @@ class DbUserQueryRequest(BaseUserQueryRequest):
 class UserCreateRequest(BaseUserQueryRequest):
     username: str
     password: str
-    email: str
 
 
 class TokenResponse(BaseModel):
@@ -38,5 +37,5 @@ class TokenData(BaseModel):
 class BaseUserQueryResponse(BaseUserQueryRequest):
     id: int
     username: str
-    email: str
+    email: str | None
     disabled: bool

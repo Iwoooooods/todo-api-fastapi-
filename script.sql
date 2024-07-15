@@ -17,12 +17,20 @@ create table tasks
 create index idx_user_id
     on tasks (user_id);
 
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
-    updated_at DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(50) NOT NULL UNIQUE,
-    hashed_password VARCHAR(50) NOT NULL,
-    disabled BOOLEAN NOT NULL DEFAULT TRUE
+create table users
+(
+    id              int auto_increment
+        primary key,
+    created_at      datetime(6) default CURRENT_TIMESTAMP(6) null,
+    updated_at      datetime(6)                              null on update CURRENT_TIMESTAMP(6),
+    username        varchar(50)                              not null,
+    email           varchar(50)                              null,
+    hashed_password varchar(512)                             not null,
+    disabled        tinyint(1)  default 1                    not null,
+    constraint email
+        unique (email),
+    constraint username
+        unique (username),
+    constraint users_pk
+        unique (email)
 );

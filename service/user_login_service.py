@@ -45,7 +45,7 @@ class LoginService:
         hashed_password = bcrypt.hashpw(password=pwd_bytes, salt=salt)
         return hashed_password.decode('utf-8')
 
-    async def get_current_user(self, token: str = Depends(oauth2_scheme)) -> Response | BaseUserQueryResponse:
+    async def get_current_user(self, token: str = Depends(oauth2_scheme)) -> Response:
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             username: str = payload.get("sub")
@@ -60,7 +60,8 @@ class LoginService:
         user: User = await self.repo.get_user_by_email_or_name(username=token_data.username, email=None)
         if user is None:
             return JSONResponse(content={"msg": "User not found"}, status_code=status.HTTP_404_NOT_FOUND)
-        return BaseUserQueryResponse(**user.to_dict())
+        return JSONResponse(content={"me": BaseUserQueryResponse(**user.to_dict()).model_dump()},
+                            status_code=status.HTTP_200_OK)
 
     @staticmethod
     def verify_password(plain_password, hashed_password) -> bool:
@@ -75,7 +76,7 @@ class LoginService:
             return LoginError.INCORRECT_PASSWORD
         return user
 
-    async def create_user(self, req: UserCreateRequest) -> Response | BaseUserQueryResponse:
+    async def create_user(self, req: UserCreateRequest) -> Response:
         hashed_password = self.get_password_hash(req.password)
         user: User = User(username=req.username, hashed_password=hashed_password, email=req.email)
         try:
@@ -83,7 +84,7 @@ class LoginService:
         except Exception as ex:
             logger.error(ex)
             return JSONResponse({"msg": "Internal Server Error!"}, status_code=500)
-        return BaseUserQueryResponse(**user.to_dict())
+        return JSONResponse(**user.to_dict(), status_code=status.HTTP_201_CREATED)
 
 
 async def get_login_service(repo: LoginRepository = Depends(get_repository)) -> LoginService:
