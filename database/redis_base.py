@@ -7,7 +7,7 @@ from typing import Optional
 from redis import Redis
 
 dotenv.load_dotenv('../.env')
-redis_host = os.getenv("HOST")
+redis_host = os.getenv("REDIS_HOST")
 redis_port = os.getenv("REDIS_PORT")
 redis_db = os.getenv("REDIS_DB")
 url = f"redis://{redis_host}:{redis_port}/{redis_db}"
