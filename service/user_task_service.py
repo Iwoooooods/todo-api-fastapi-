@@ -71,11 +71,17 @@ class TaskService:
                           redis_client: Redis) -> Response:
         try:
             await self.repo.update_task(task_id, req.dict())
-            if req.deadline:
+            if req.is_completed:
+                await redis_client.zrem(f"user:{user_id}:time_remain", str(task_id))
+                return JSONResponse(content={"msg": "Task Completed! Congratulation!!"}, status_code=status.HTTP_200_OK)
+            elif req.deadline:
+                print(req.deadline)
+                if req.deadline < datetime.now():
+                    return JSONResponse(content={"msg": "Deadline should be later than now!"},
+                                        status_code=status.HTTP_400_BAD_REQUEST)
                 deadline_timestamp = int(req.deadline.timestamp())
                 await redis_client.zadd(f"user:{user_id}:time_remain", {str(task_id): deadline_timestamp})
-            if req.is_completed:
-                return JSONResponse(content={"msg": "Task Completed! Congratulation!!"}, status_code=status.HTTP_200_OK)
+                return JSONResponse(content={"msg": "Task Updated"}, status_code=status.HTTP_200_OK)
             else:
                 return JSONResponse(content={"msg": "Task Updated"}, status_code=status.HTTP_200_OK)
         except Exception as ex:

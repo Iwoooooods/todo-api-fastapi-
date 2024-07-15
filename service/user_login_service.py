@@ -1,16 +1,21 @@
+from typing import Optional
+
 import jwt
 import bcrypt
 
 from loguru import logger
 from datetime import datetime, timedelta, timezone
-from fastapi import Depends, HTTPException, status, Response
+from fastapi import Depends, status, Response
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jwt.exceptions import InvalidTokenError
+from fastapi.responses import JSONResponse
+from jwt.exceptions import InvalidTokenError, ExpiredSignatureError
 
 from model.user import User
 from repository.user_login_repository import LoginRepository, get_repository
-from schema.user import BaseUserQueryRequest, DbUserQueryRequest, TokenResponse, TokenData, UserLoginRequest, \
+from schema.user import TokenData, UserLoginRequest, \
     UserCreateRequest, BaseUserQueryResponse
+from const import LoginError
+
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
@@ -41,23 +46,20 @@ class LoginService:
         return hashed_password.decode('utf-8')
 
     async def get_current_user(self, token: str = Depends(oauth2_scheme)) -> Response | BaseUserQueryResponse:
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             username: str = payload.get("sub")
             if username is None:
-                return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+                return JSONResponse(content={"msg": "User Not Found!"}, status_code=status.HTTP_404_NOT_FOUND)
             token_data = TokenData(username=username)
-        except InvalidTokenError as error:
+        except (InvalidTokenError, ExpiredSignatureError) as error:
             logger.error(error)
-            return Response(content="Invalid token", status_code=status.HTTP_401_UNAUTHORIZED)
+            if isinstance(error, ExpiredSignatureError):
+                return JSONResponse(content={"msg": "Token expired"}, status_code=status.HTTP_401_UNAUTHORIZED)
+            return JSONResponse(content={"msg": "Invalid token"}, status_code=status.HTTP_401_UNAUTHORIZED)
         user: User = await self.repo.get_user_by_email_or_name(username=token_data.username, email=None)
         if user is None:
-            return Response(content="User not found", status_code=status.HTTP_404_NOT_FOUND)
+            return JSONResponse(content={"msg": "User not found"}, status_code=status.HTTP_404_NOT_FOUND)
         return BaseUserQueryResponse(**user.to_dict())
 
     @staticmethod
@@ -65,12 +67,12 @@ class LoginService:
         password_byte_enc = plain_password.encode('utf-8')
         return bcrypt.checkpw(password=password_byte_enc, hashed_password=hashed_password)
 
-    async def authenticate_user(self, req: UserLoginRequest) -> User | bool:
+    async def authenticate_user(self, req: UserLoginRequest) -> User | LoginError:
         user = await self.repo.get_user_by_email_or_name(email=req.email, username=req.username)
         if not user:
-            return False
+            return LoginError.USER_NOT_FOUND
         if not self.verify_password(req.password, bytes(user.hashed_password, "utf-8")):
-            return False
+            return LoginError.INCORRECT_PASSWORD
         return user
 
     async def create_user(self, req: UserCreateRequest) -> Response | BaseUserQueryResponse:
@@ -80,7 +82,7 @@ class LoginService:
             user = await self.repo.add_user(user)
         except Exception as ex:
             logger.error(ex)
-            return Response("Internal Server Error!", status_code=500)
+            return JSONResponse({"msg": "Internal Server Error!"}, status_code=500)
         return BaseUserQueryResponse(**user.to_dict())
 
 
