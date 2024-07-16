@@ -3,10 +3,9 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 from redis.asyncio import Redis
 
-from schema.user_task import CreateTaskRequest, PageResponse, CompleteTaskRequest, BaseQueryRequest, UserTask
-from schema.base import BaseResponse
-from service.user_task_service import get_task_service, TaskService
-from database.redis_base import get_client
+from app.schema.user_task import CreateTaskRequest, CompleteTaskRequest, BaseQueryRequest, UserTask
+from app.service.user_task_service import get_task_service, TaskService
+from app.database.redis_base import get_client
 
 router = APIRouter()
 

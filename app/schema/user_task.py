@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, field_serializer
 from datetime import datetime
 
-from schema.base import BaseResponse
+from app.schema.base import BaseResponse
 
 
 class UserTask(BaseModel):

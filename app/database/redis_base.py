@@ -1,23 +1,17 @@
-import os
-import dotenv
-import redis.asyncio as redis
 import asyncio
-
+import os
 from typing import Optional
-from redis import Redis
 
-dotenv.load_dotenv('../.env')
-redis_host = os.getenv("REDIS_HOST")
-redis_port = os.getenv("REDIS_PORT")
-redis_db = os.getenv("REDIS_DB")
-url = f"redis://{redis_host}:{redis_port}/{redis_db}"
+import redis.asyncio as redis
+from loguru import logger
+from redis import Redis
 
 
 class RedisClient:
-    def __init__(self, connection_url: str):
-        self._url = connection_url
-        print(f"successfully connected to Redis: {self._url}")
+    def __init__(self):
+        self._url = f"redis://{os.getenv("REDIS_HOST")}:{os.getenv("REDIS_PORT")}/{os.getenv("REDIS_DB")}"
         self.client: Optional[Redis] = None
+        logger.info(f"Connected to Redis: {self._url}")
 
     def init_connection(self):
         pool = redis.ConnectionPool.from_url(self._url)
@@ -31,7 +25,7 @@ async def get_client():
     return redis_client.client
 
 
-redis_client = RedisClient(url)
+redis_client = RedisClient()
 
 
 async def test_connection():

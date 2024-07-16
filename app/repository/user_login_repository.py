@@ -6,8 +6,8 @@ from sqlalchemy import select, Result
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.testing.pickleable import User
 
-from database.base import get_db
-from model.user import User
+from app.database.base import database_client
+from app.model.user import User
 
 
 class LoginRepository:
@@ -36,5 +36,5 @@ class LoginRepository:
         return user
 
 
-async def get_repository(db: AsyncSession = Depends(get_db)) -> LoginRepository:
+async def get_repository(db: AsyncSession = Depends(database_client.get_db)) -> LoginRepository:
     return LoginRepository(db)

@@ -1,15 +1,14 @@
-from typing import Union, List
+from typing import List
 
 from fastapi import Depends, Response, status
 from fastapi.responses import JSONResponse
 from loguru import logger
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 from redis.asyncio import Redis
 
-from schema.user_task import PageResponse, CreateTaskRequest, CompleteTaskRequest, BaseQueryRequest, UserTask
-from schema.base import BaseResponse
-from model.task import Task
-from repository.user_task_repository import TaskRepository, get_repository
+from app.schema.user_task import PageResponse, CreateTaskRequest, CompleteTaskRequest, BaseQueryRequest, UserTask
+from app.model.task import Task
+from app.repository.user_task_repository import TaskRepository, get_repository
 
 
 class TaskService:

@@ -1,15 +1,14 @@
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
 
 from fastapi import Depends, HTTPException
 from loguru import logger
 from sqlalchemy import text, select, and_, or_, func, desc
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
-from database.base import get_db
-from model.task import Task
+from app.database.base import database_client
+from app.model.task import Task
 
 
 class TaskRepository:
@@ -139,7 +138,7 @@ class TaskRepository:
             raise e
 
 
-async def get_repository(db: AsyncSession = Depends(get_db)) -> TaskRepository:
+async def get_repository(db: AsyncSession = Depends(database_client.get_db)) -> TaskRepository:
     """
     Get the task repository
     :param db:

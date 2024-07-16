@@ -1,11 +1,11 @@
 import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routes.api import router
-from database.redis_base import redis_client
-
+load_dotenv()
 app = FastAPI()
+from app.routes.api import router
 app.include_router(router, prefix="/api", tags=[""])
 app.add_middleware(
     CORSMiddleware,
@@ -24,6 +24,9 @@ async def root():
 @app.get("/hello/{name}")
 async def say_hello(name: str):
     return {"message": f"Hello {name}"}
+
+
+from app.database.redis_base import redis_client
 
 
 @app.on_event("startup")

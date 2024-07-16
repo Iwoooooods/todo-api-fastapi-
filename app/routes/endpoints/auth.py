@@ -4,10 +4,10 @@ from fastapi import Depends, APIRouter, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
-from const import LoginError
-from model.user import User
-from schema.user import TokenResponse, UserLoginRequest, UserCreateRequest
-from service.user_login_service import get_login_service, LoginService
+from app.const import LoginError
+from app.model.user import User
+from app.schema.user import TokenResponse, UserLoginRequest, UserCreateRequest
+from app.service.user_login_service import get_login_service, LoginService
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 router = APIRouter()

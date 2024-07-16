@@ -1,20 +1,18 @@
-from typing import Optional
-
 import jwt
 import bcrypt
 
 from loguru import logger
 from datetime import datetime, timedelta, timezone
 from fastapi import Depends, status, Response
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.responses import JSONResponse
 from jwt.exceptions import InvalidTokenError, ExpiredSignatureError
 
-from model.user import User
-from repository.user_login_repository import LoginRepository, get_repository
-from schema.user import TokenData, UserLoginRequest, \
+from app.model.user import User
+from app.repository.user_login_repository import LoginRepository, get_repository
+from app.schema.user import TokenData, UserLoginRequest, \
     UserCreateRequest, BaseUserQueryResponse
-from const import LoginError
+from app.const import LoginError
 
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
